@@ -24,4 +24,9 @@ export default tseslint.config(
       'no-restricted-globals': ['error', 'window', 'document', 'navigator', 'localStorage'],
     },
   },
+  {
+    // Dans les tests, un index hors bornes doit faire échouer le test : l'assertion non nulle suffit.
+    files: ['tests/**/*.ts'],
+    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
+  },
 );

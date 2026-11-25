@@ -64,12 +64,14 @@ Règles de design du hasard :
 - Les chances sont toujours affichées avant de valider, et mises à jour en direct quand on applique une influence.
 - Pas de « faux % » : ce qui est affiché est exactement ce qui est tiré (tests unitaires dessus).
 - RNG seedé et séparé en flux (carte, combat, loot, mini-jeux) : même seed = même run (seed du jour, bugs reproductibles).
+- Graine de 256 bits tirée sur random.org (fonction Supabase, clé secrète côté serveur), repli crypto ; générateur ChaCha20.
+- Le Karma s'applique au prochain pari (roue, main de combat, rouleaux, piège, carte, fuite), pas au jet de déplacement.
 
 ## Les systèmes de jeu
 
 ### Déplacements
 
-Chaque tour commence par un **jet de déplacement** (2d6 de base). Le total donne les cases parcourues ; on choisit la case d'arrivée parmi celles atteignables, en surbrillance.
+Chaque tour commence par un **jet de déplacement** (2d6 de base ; 2d4 sur les étages 7×7 du J1). Le total donne les cases parcourues ; on choisit la case d'arrivée parmi celles atteignables, en surbrillance.
 
 - Cases visibles (sol, porte, coffre fermé, flaque de chance) ou cachées sous le brouillard (« ? »).
 - Tomber pile sur une case spéciale déclenche un bonus (une **flaque de chance** donne 1 Trèfle).

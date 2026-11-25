@@ -1,5 +1,4 @@
 import fredokaUrl from '@fontsource/fredoka/files/fredoka-latin-600-normal.woff2?url';
-import { BOARD } from './content/board';
 import { fr } from './content/i18n/fr';
 import { createGame } from './core/state';
 import { createStore, type Store } from './core/store';
@@ -9,9 +8,11 @@ import { detectWebGL } from './render3d/webgl';
 import { showFallbackBanner, type FallbackCause } from './ui/banner';
 import { installErrorHandlers, showFatalError } from './ui/errors';
 import { applyMotionVars } from './ui/motion';
+import { obtainSeed } from './seed';
 import { mountScreens, mountVersion } from './ui/screens';
 import type { BoardView } from './ui/view';
 import './ui/styles.css';
+import './ui/bets.css';
 
 function applyTheme(): void {
   const root = document.documentElement;
@@ -47,8 +48,11 @@ async function boot(): Promise<void> {
   installErrorHandlers();
   applyTheme();
   const params = new URLSearchParams(location.search);
-  const seed = params.get('seed') ?? Date.now().toString(36);
-  const store = createStore(createGame(seed, BOARD));
+  setLoading(fr.loading.seed);
+  let seed = await obtainSeed(params.get('seed'));
+  const store = createStore(createGame(seed.seed));
+  // Débogage et tests de bout en bout uniquement : absent du build.
+  if (import.meta.env.DEV) Object.assign(window, { __store: store });
   const container = document.getElementById('board');
   const screens = document.getElementById('screens');
   if (!container || !screens) throw new Error('Structure HTML incomplète (#board, #screens)');
@@ -76,9 +80,19 @@ async function boot(): Promise<void> {
     }
   }
 
-  mountScreens(screens, store, (on) => {
-    interactive = on;
-    view?.setInteractive(on);
+  mountScreens(screens, {
+    store,
+    setInteractive: (on) => {
+      interactive = on;
+      view?.setInteractive(on);
+    },
+    seedLabel: () => `${fr.hud.seed(fr.seedSource[seed.source])} · ${seed.seed.slice(0, 8)}`,
+    newRun: () => {
+      void obtainSeed(null).then((next) => {
+        seed = next;
+        store.dispatch({ type: 'newRun', seed: next.seed });
+      });
+    },
   });
   mountVersion();
   hideLoading();

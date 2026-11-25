@@ -1,18 +1,63 @@
-// RNG seedé sfc32 : rapide, état sérialisable (4 entiers), bonne qualité statistique.
-// Chaque flux (map, combat, loot, minigame) a son propre état dérivé de la seed,
-// pour qu'un tirage de combat en plus ne décale pas la génération de la carte.
+// RNG seedé : ChaCha20 (RFC 8439) utilisé comme générateur de flux.
+// Pourquoi ChaCha20 : clé de 256 bits (toute l'entropie de la graine est conservée),
+// qualité cryptographique, uniquement des opérations 32 bits (rapide en JS, sans BigInt).
+// Chaque flux (map, combat, loot, minigame) a son propre nonce : un tirage de combat
+// en plus ne décale jamais la génération de la carte.
 
 export const RNG_STREAMS = ['map', 'combat', 'loot', 'minigame'] as const;
 export type RngStream = (typeof RNG_STREAMS)[number];
 
-export type RngState = readonly [number, number, number, number];
+/** Graine canonique : 64 caractères hexadécimaux = 256 bits. */
+export const SEED_HEX_LENGTH = 64;
+
+export interface RngState {
+  readonly key: readonly number[];
+  readonly nonce: readonly number[];
+  /** Position du prochain mot de 32 bits dans le flux. */
+  readonly pos: number;
+}
 export type RngStreams = Readonly<Record<RngStream, RngState>>;
 
-function hashString(text: string): RngState {
-  let h1 = 1779033703;
-  let h2 = 3144134277;
-  let h3 = 1013904242;
-  let h4 = 2773480762;
+const SIGMA = [0x61707865, 0x3320646e, 0x79622d32, 0x6b206574];
+const STREAM_TAG = 0x4c75636b; // « Luck » : sépare nos nonces de tout autre usage de la clé.
+
+const rotl = (v: number, n: number): number => (v << n) | (v >>> (32 - n));
+
+function quarter(x: Uint32Array, a: number, b: number, c: number, d: number): void {
+  /* eslint-disable @typescript-eslint/no-non-null-assertion -- indices fixes 0..15 */
+  x[a] = (x[a]! + x[b]!) | 0; x[d] = rotl(x[d]! ^ x[a]!, 16);
+  x[c] = (x[c]! + x[d]!) | 0; x[b] = rotl(x[b]! ^ x[c]!, 12);
+  x[a] = (x[a]! + x[b]!) | 0; x[d] = rotl(x[d]! ^ x[a]!, 8);
+  x[c] = (x[c]! + x[d]!) | 0; x[b] = rotl(x[b]! ^ x[c]!, 7);
+  /* eslint-enable @typescript-eslint/no-non-null-assertion */
+}
+
+export function chachaBlock(key: readonly number[], counter: number, nonce: readonly number[]): Uint32Array {
+  const input = new Uint32Array([...SIGMA, ...key, counter >>> 0, ...nonce]);
+  const x = input.slice();
+  for (let i = 0; i < 10; i++) {
+    quarter(x, 0, 4, 8, 12); quarter(x, 1, 5, 9, 13); quarter(x, 2, 6, 10, 14); quarter(x, 3, 7, 11, 15);
+    quarter(x, 0, 5, 10, 15); quarter(x, 1, 6, 11, 12); quarter(x, 2, 7, 8, 13); quarter(x, 3, 4, 9, 14);
+  }
+  for (let i = 0; i < 16; i++) x[i] = ((x[i] ?? 0) + (input[i] ?? 0)) >>> 0;
+  return x;
+}
+
+// Cache du dernier bloc : l'état reste pur, on évite seulement de recalculer 16 fois le même bloc.
+let cache: { key: readonly number[]; nonce: readonly number[]; counter: number; block: Uint32Array } | null = null;
+
+function blockFor(state: RngState, counter: number): Uint32Array {
+  if (cache && cache.key === state.key && cache.nonce === state.nonce && cache.counter === counter) return cache.block;
+  const block = chachaBlock(state.key, counter, state.nonce);
+  cache = { key: state.key, nonce: state.nonce, counter, block };
+  return block;
+}
+
+function hash128(text: string, salt: number): number[] {
+  let h1 = 1779033703 ^ salt;
+  let h2 = 3144134277 ^ salt;
+  let h3 = 1013904242 ^ salt;
+  let h4 = 2773480762 ^ salt;
   for (let i = 0; i < text.length; i++) {
     const k = text.charCodeAt(i);
     h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
@@ -27,40 +72,36 @@ function hashString(text: string): RngState {
   return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
 }
 
+/**
+ * Clé de 256 bits depuis la graine. Une graine hexadécimale de 64 caractères (random.org ou
+ * crypto) est utilisée telle quelle ; une graine tapée à la main (?seed=abc) est hachée.
+ */
+export function seedKey(seed: string): number[] {
+  const hex = seed.trim().toLowerCase();
+  if (/^[0-9a-f]{64}$/.test(hex)) {
+    return Array.from({ length: 8 }, (_, i) => parseInt(hex.slice(i * 8, i * 8 + 8), 16) >>> 0);
+  }
+  return [...hash128(seed, 0x5eed0001), ...hash128(seed, 0x5eed0002)];
+}
+
 export function createRng(seed: string, stream: RngStream): RngState {
-  let state = hashString(`${seed}:${stream}`);
-  // Quelques tours à vide : les premiers tirages de sfc32 sont corrélés à la seed.
-  for (let i = 0; i < 12; i++) state = nextUint32(state)[1];
-  return state;
+  return { key: seedKey(seed), nonce: [RNG_STREAMS.indexOf(stream), STREAM_TAG, 0], pos: 0 };
 }
 
 export function createStreams(seed: string): RngStreams {
-  return {
-    map: createRng(seed, 'map'),
-    combat: createRng(seed, 'combat'),
-    loot: createRng(seed, 'loot'),
-    minigame: createRng(seed, 'minigame'),
-  };
+  const key = seedKey(seed);
+  const make = (stream: RngStream): RngState => ({ key, nonce: [RNG_STREAMS.indexOf(stream), STREAM_TAG, 0], pos: 0 });
+  return { map: make('map'), combat: make('combat'), loot: make('loot'), minigame: make('minigame') };
 }
 
 export function nextUint32(state: RngState): [number, RngState] {
-  let [a, b, c, d] = state;
-  a >>>= 0;
-  b >>>= 0;
-  c >>>= 0;
-  d >>>= 0;
-  let t = (a + b) | 0;
-  a = b ^ (b >>> 9);
-  b = (c + (c << 3)) | 0;
-  c = (c << 21) | (c >>> 11);
-  d = (d + 1) | 0;
-  t = (t + d) | 0;
-  c = (c + t) | 0;
-  return [t >>> 0, [a >>> 0, b >>> 0, c >>> 0, d >>> 0]];
+  const block = blockFor(state, Math.floor(state.pos / 16));
+  return [block[state.pos % 16] ?? 0, { key: state.key, nonce: state.nonce, pos: state.pos + 1 }];
 }
 
-/** Flottant uniforme dans [0, 1). */
+/** Flottant uniforme dans [0, 1), sur 53 bits (deux mots) pour ne pas biaiser les petites probabilités. */
 export function nextFloat(state: RngState): [number, RngState] {
-  const [n, next] = nextUint32(state);
-  return [n / 4294967296, next];
+  const [hi, s1] = nextUint32(state);
+  const [lo, s2] = nextUint32(s1);
+  return [((hi >>> 5) * 67108864 + (lo >>> 6)) / 9007199254740992, s2];
 }
