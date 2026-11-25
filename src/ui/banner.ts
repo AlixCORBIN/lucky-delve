@@ -2,12 +2,18 @@ import { fr } from '../content/i18n/fr';
 import { el } from './dom';
 import { icon } from './icons';
 
-export function showFallbackBanner(reason: string | null): void {
-  const banner = el('div', 'banner');
+export type FallbackCause = keyof typeof fr.fallback.causes;
+
+/** Bandeau discret : signale le mode 2D, la cause et l'aide sont repliées. */
+export function showFallbackBanner(cause: FallbackCause, detail?: string): void {
+  document.querySelector('.banner')?.remove();
+  const banner = el('details', 'banner');
   banner.setAttribute('role', 'status');
-  const text = el('div', 'banner-text');
-  text.append(el('strong', undefined, fr.fallback.banner), el('span', undefined, fr.fallback.help));
-  if (reason) text.append(el('code', undefined, reason));
-  banner.append(icon('alertTriangle'), text);
+  const summary = el('summary');
+  summary.append(icon('alertTriangle'), el('strong', undefined, fr.fallback.banner), el('span', 'banner-why', fr.fallback.why));
+  const body = el('div', 'banner-text');
+  body.append(el('span', undefined, fr.fallback.causes[cause]));
+  if (detail) body.append(el('code', undefined, detail));
+  banner.append(summary, body);
   document.body.append(banner);
 }

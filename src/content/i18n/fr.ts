@@ -19,8 +19,14 @@ export const fr = {
     models: 'Chargement des modèles',
   },
   fallback: {
-    banner: 'Mode 2D : WebGL indisponible.',
-    help: 'Active l’accélération matérielle du navigateur. Sur Firefox, vérifie que webgl.disabled vaut false dans about:config.',
+    banner: 'Mode 2D de secours',
+    why: 'Pourquoi ?',
+    causes: {
+      forced: 'Forcé par ?renderer=2d dans l’adresse.',
+      webgl: 'WebGL indisponible. Active l’accélération matérielle du navigateur. Sur Firefox, vérifie que webgl.disabled vaut false dans about:config.',
+      lost: 'Le contexte WebGL a été perdu (pilote graphique ou mémoire). Recharge la page.',
+      load: 'Les modèles 3D n’ont pas pu être chargés.',
+    },
   },
   errors: {
     boot: 'Le jeu n’a pas pu démarrer.',

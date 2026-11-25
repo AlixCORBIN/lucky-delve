@@ -6,7 +6,7 @@ import { createStore, type Store } from './core/store';
 import { createBoard2d } from './render2d/board2d';
 import { PALETTE } from './render3d/palette';
 import { detectWebGL } from './render3d/webgl';
-import { showFallbackBanner } from './ui/banner';
+import { showFallbackBanner, type FallbackCause } from './ui/banner';
 import { installErrorHandlers, showFatalError } from './ui/errors';
 import { applyMotionVars } from './ui/motion';
 import { mountScreens, mountVersion } from './ui/screens';
@@ -56,23 +56,23 @@ async function boot(): Promise<void> {
   let view: BoardView | null = null;
   let interactive = false;
 
-  const fallbackTo2d = (reason: string | null): void => {
+  const fallbackTo2d = (cause: FallbackCause, detail?: string): void => {
     view?.dispose();
     view = createBoard2d(container, store);
     view.setInteractive(interactive);
-    showFallbackBanner(reason);
+    showFallbackBanner(cause, detail);
   };
 
   const forced2d = params.get('renderer') === '2d';
   const support = forced2d ? null : detectWebGL();
   if (!support) {
-    fallbackTo2d(forced2d ? '?renderer=2d' : null);
+    fallbackTo2d(forced2d ? 'forced' : 'webgl');
   } else {
     try {
-      view = await create3d(container, store, () => fallbackTo2d('webglcontextlost'));
+      view = await create3d(container, store, () => fallbackTo2d('lost'));
     } catch (error) {
       console.error(error);
-      fallbackTo2d(error instanceof Error ? error.message : String(error));
+      fallbackTo2d('load', error instanceof Error ? error.message : String(error));
     }
   }
 
