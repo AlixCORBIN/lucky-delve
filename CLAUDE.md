@@ -15,7 +15,7 @@ npm run dev        # serveur local
 npm run check      # tsc --noEmit + eslint
 npm test           # vitest run (core uniquement)
 npm run build      # build GitHub Pages
-npm run build:single  # build artefact single-file
+npm run build:single  # build artefact single-file (dist-single/index.html)
 ```
 Avant chaque commit : `npm run check && npm test`. Avant chaque publication d'artefact : `npm run build:single`.
 
