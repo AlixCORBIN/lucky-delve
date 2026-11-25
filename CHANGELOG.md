@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.2
+- La graine passe d'abord par la fonction random.org du serveur d'alix (clé cachée côté serveur), puis random.org public, puis l'aléa du navigateur.
+
 ## 0.2.1
 - La graine de chaque partie est tirée sur random.org (sans clé), avec repli automatique sur l'aléa du navigateur ; la source s'affiche en jeu.
 
