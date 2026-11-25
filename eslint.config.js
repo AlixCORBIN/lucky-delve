@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'dist-single', 'node_modules', 'public'] },
+  { ignores: ['dist', 'dist-single', 'node_modules', 'public', 'supabase'] },
   js.configs.recommended,
   ...tseslint.configs.strict,
   {
