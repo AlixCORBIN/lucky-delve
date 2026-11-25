@@ -156,7 +156,7 @@ src/
   core/       logique pure (RNG, Destin, état, règles)
   content/    données : héros, monstres, dés, charmes, salles
   render3d/   three.js, caméra iso, glTF
-  render2d/   rendu de secours Canvas 2D
+  render2d/   secours Canvas 2D minimal, jamais prioritaire
   ui/         écrans et widgets de pari
   main.ts     boot, détection WebGL
 public/models/
@@ -167,13 +167,14 @@ tests/
 - Caméra orthographique inclinée, grille de tuiles, pas de physique.
 - Modèles compressés (Meshopt/Draco), budget < 10 Mo (limite artefact 16 Mo).
 
-Fallback WebGL :
+Fallback WebGL (filet de sécurité minimal, le jeu reste pensé en 3D) :
 
 1. Tester WebGL2 puis WebGL1 dans un `try/catch` avant le renderer.
 2. Écouter `webglcontextlost`.
 3. Échec → `render2d` + bandeau « Mode 2D : WebGL indisponible » avec aide (`webgl.disabled` sur Firefox).
 4. Écran de chargement HTML d'abord ; erreurs de boot affichées en clair.
 5. `?renderer=2d` force le mode 2D.
+6. Le mode 2D reste minimal : formes unies, sans animation ni polish, juste jouable. Il ne devient jamais un rendu principal.
 
 ## Workflow GitHub et artefact
 
@@ -185,7 +186,7 @@ Fallback WebGL :
 
 ## Roadmap
 
-1. **J0 Fondations** : Vite + TS, CI, écran de chargement, WebGL + fallback 2D, scène iso avec une tuile et un héros KayKit.
+1. **J0 Fondations** : Vite + TS, CI, écran de chargement, WebGL + fallback 2D minimal, scène iso avec une tuile et un héros KayKit.
 2. **J1 Moteur Destin** : RNG à flux, dés, roue, rouleaux, cartes, influences ; tests ; page démo.
 3. **J2 Exploration** : étage en grille, jet de déplacement, brouillard, roue de salle.
 4. **J3 Combat** : main de dés, emplacements, combos, intentions, 4 monstres.
