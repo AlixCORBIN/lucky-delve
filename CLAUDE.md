@@ -49,7 +49,8 @@ Le jeu est pensé et peaufiné en 3D. Le mode 2D est un simple filet de sécurit
 - Sources d'assets : KayKit (principale), Kenney, Quaternius, Poly Pizza (au cas par cas). Rester sur 1-2 sources par catégorie pour garder un style cohérent.
 - **Aucun asset généré par IA.** Pas de néon, de dégradés ou d'effets gratuits.
 - Chaque asset ajouté → une ligne dans `CREDITS.md` (nom, auteur, URL, licence). Vérifier la licence sur la page du pack. CC-BY → attribution dans l'écran Crédits. Licence inconnue ou NC → ne pas utiliser.
-- Budget : modèles compressés (Meshopt), total du jeu < 10 Mo (limite artefact 16 Mo).
+- Budget : modèles allégés (animations et objets inutiles retirés), total du jeu < 10 Mo (limite artefact 16 Mo).
+- L'artefact Claude interdit `fetch()` (data:, blob:) et WebAssembly : pas de Meshopt/Draco, modèles décodés depuis le base64 et textures via `<img>` (voir `src/render3d/models.ts`).
 
 ## Menus : animations + icônes du design system « DA Alix »
 Source : https://claude.ai/artifact/SiTiwQs7za6VdmZJAi68wZ (lire `project/README.md`, sections Mouvement et Iconographie). On n'en reprend QUE les animations et les icônes, pas les couleurs ni la typo.

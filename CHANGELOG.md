@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+- Corrige l'artefact qui s'ouvrait en mode 2D de secours : la vue 3D isométrique s'affiche maintenant.
+- Le bandeau du mode 2D est plus discret et donne la vraie cause.
+- Le mode 2D dessine aussi le plateau en losanges isométriques.
+
 ## 0.1.0 : J0 Fondations
 - Scène 3D isométrique : plateau 5×5 de dalles et une chevalière KayKit animée qu'on déplace en cliquant une case.
 - Menu principal et HUD avec animations « DA Alix » et icônes Papicons ; popover Crédits.

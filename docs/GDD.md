@@ -165,7 +165,7 @@ tests/
 
 - Core sans dépendance : état + actions, testable et rejouable hors navigateur.
 - Caméra orthographique inclinée, grille de tuiles, pas de physique.
-- Modèles compressés (Meshopt/Draco), budget < 10 Mo (limite artefact 16 Mo).
+- Modèles allégés sans Meshopt/Draco (l'artefact bloque fetch et WebAssembly), budget < 10 Mo (limite artefact 16 Mo).
 
 Fallback WebGL (filet de sécurité minimal, le jeu reste pensé en 3D) :
 
