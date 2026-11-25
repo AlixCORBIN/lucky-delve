@@ -7,7 +7,7 @@ Design complet : `docs/GDD.md`. Ne le lire que pour la section utile (grep le ti
 - TypeScript strict + Vite + three.js. Tests : Vitest. Pas d'autre framework (pas de React).
 - UI des paris (dés, roue, rouleaux, cartes) en HTML/CSS par-dessus le canvas.
 - Build artefact : `vite-plugin-singlefile` → un seul `dist/index.html`.
-- Supabase : seulement au jalon J7 (seed du jour). Ne pas l'ajouter avant.
+- Supabase : seulement la fonction Edge `seed` (graine random.org, voir Hasard). Seed du jour et classement au J7, pas avant.
 
 ## Commandes
 ```
@@ -32,6 +32,7 @@ public/models/ .glb optimisés. tests/ tests du core.
 - Le rendu **lit** l'état et **envoie des actions** au core. Il ne modifie jamais l'état directement.
 - Tout hasard passe par `core/destin`. Interdit : `Math.random()` ailleurs (lint).
 - RNG seedé avec flux séparés : `map`, `combat`, `loot`, `minigame`. Même seed = même run.
+- **Hasard (choix d'alix)** : graine de 256 bits (64 hex) par partie, tirée sur random.org par la fonction Supabase `seed` qui garde une clé API dédiée au jeu en secret serveur (jamais côté client, jamais dans le chat ni le dépôt). Repli `crypto.getRandomValues` si random.org est injoignable. Tous les tirages en dérivent via ChaCha20 (`core/rng.ts`) ; pas de LCG ni de PRNG faible.
 - Les probabilités affichées au joueur sont calculées par la même fonction que le tirage. Chaque nouveau pari a un test qui le vérifie.
 - Équilibrage (coûts en Trèfles, poids des roues, dégâts) dans `src/content/`, jamais en dur dans la logique.
 
@@ -89,4 +90,4 @@ Source : https://claude.ai/artifact/SiTiwQs7za6VdmZJAi68wZ (lire `project/README
 - Une décision de design nouvelle → l'ajouter en une ligne dans `docs/GDD.md` ou ici, pas la répéter dans les messages.
 
 ## Jalon courant
-J0 Fondations (voir `docs/GDD.md` § Roadmap). Mettre à jour cette ligne à chaque jalon.
+J1 Moteur Destin + première boucle jouable (voir `docs/GDD.md` § Roadmap). Mettre à jour cette ligne à chaque jalon.

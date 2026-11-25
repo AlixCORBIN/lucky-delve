@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 : J1 Moteur Destin et première boucle jouable
+- Moteur Destin complet : dés (y compris pipés), roue à parts, machine à sous à 3 rouleaux, cartes, pièce ; les chances affichées sont celles du tirage (testé).
+- Leviers d'influence en Trèfles : relance, poussée ±1, retrait et décalage de part de roue, blocage de rouleaux, coup d'œil ; Karma qui garantit le meilleur résultat après 5 échecs.
+- Boucle jouable sur 3 étages 7×7 : jet de déplacement, salles « ? » révélées par la roue (monstre, trésor, piège, plus haut / plus bas, source), combats aux dés avec Attaque/Garde et combos, fuite à pile ou face avec mise, boss en fin d'étage.
+- Graine de 256 bits par partie (random.org via Supabase, repli crypto), générateur ChaCha20.
+- Barre de ressources (PV, Or, Trèfles, Karma, étage) et fil des événements.
+
 ## 0.1.1
 - Corrige l'artefact qui s'ouvrait en mode 2D de secours : la vue 3D isométrique s'affiche maintenant.
 - Le bandeau du mode 2D est plus discret et donne la vraie cause.
