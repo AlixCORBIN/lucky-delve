@@ -197,6 +197,8 @@ Fallback WebGL (filet de sécurité minimal, le jeu reste pensé en 3D) :
 7. **J6 Contenu et polish** : mini-jeux, 3 boss, charmes, sons, animations, équilibrage.
 8. **J7 Bonus** : seed du jour Supabase, mobile, Mises hautes.
 
+Monde procédural (après J4) : proposition dans [`docs/monde-procedural.md`](monde-procedural.md), en attente des choix d'alix.
+
 ## Questions ouvertes
 
 - [x] Dépôt : `AlixCORBIN/lucky-delve`, public.
