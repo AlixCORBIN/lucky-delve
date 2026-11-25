@@ -1,15 +1,25 @@
 import { fr } from '../content/i18n/fr';
 import type { Store } from '../core/store';
+import { mountBetPanel } from './bets/panel';
 import { openCredits } from './credits';
 import { button, el } from './dom';
-import { enterRows, pulse, swap } from './motion';
+import { mountHud } from './hud';
+import { enterRows, swap } from './motion';
 
 type Screen = 'menu' | 'play';
 
-/** Menu principal et HUD de jeu, superposés au plateau. */
-export function mountScreens(root: HTMLElement, store: Store, setInteractive: (on: boolean) => void): void {
+export interface ScreensOptions {
+  readonly store: Store;
+  readonly setInteractive: (on: boolean) => void;
+  readonly seedLabel: () => string;
+  readonly newRun: () => void;
+}
+
+/** Menu principal et écran de jeu (ressources + panneau de pari), superposés au plateau. */
+export function mountScreens(root: HTMLElement, { store, setInteractive, seedLabel, newRun }: ScreensOptions): void {
   let screen: Screen = 'menu';
   let rows: HTMLElement[] = [];
+  let cleanup: (() => void) | null = null;
 
   function buildMenu(): HTMLElement[] {
     const panel = el('div', 'menu');
@@ -26,26 +36,32 @@ export function mountScreens(root: HTMLElement, store: Store, setInteractive: (o
     return [title, tagline, play, credits];
   }
 
-  function buildHud(): HTMLElement[] {
-    const bar = el('div', 'hud');
+  function buildPlay(): HTMLElement[] {
+    const top = el('div', 'hud');
     const back = button(fr.menu.back, 'arrowLeft', 'ghost');
     back.addEventListener('click', () => void go('menu'));
-    const hint = el('p', 'hud-hint', fr.hud.hint);
-    const turn = el('span', 'hud-turn', fr.hud.turn(store.getState().turn));
-    bar.append(back, hint, turn, el('span', 'version-inline', versionText()));
-    root.replaceChildren(bar);
-    return [back, hint, turn];
+    const hud = mountHud(store, seedLabel);
+    const bet = mountBetPanel(store, newRun);
+    top.append(back, hud.node, el('span', 'version-inline', versionText()));
+    cleanup = () => {
+      hud.dispose();
+      bet.dispose();
+    };
+    root.replaceChildren(top, bet.node);
+    return [top, bet.node];
   }
 
   async function go(next: Screen): Promise<void> {
     if (next === screen) return;
     screen = next;
     setInteractive(next === 'play');
+    cleanup?.();
+    cleanup = null;
     const old = rows;
     const oldNodes = [...root.children];
     await swap(old, () => {
       // L'ancien écran reste visible pendant sa sortie : on garde ses nœuds jusqu'à la fin.
-      const fresh = next === 'menu' ? buildMenu() : buildHud();
+      const fresh = next === 'menu' ? buildMenu() : buildPlay();
       root.prepend(...oldNodes.map((n) => {
         n.classList.add('leaving');
         return n;
@@ -55,13 +71,6 @@ export function mountScreens(root: HTMLElement, store: Store, setInteractive: (o
     });
     root.querySelectorAll('.leaving').forEach((n) => n.remove());
   }
-
-  store.subscribe((state) => {
-    const turn = root.querySelector('.hud-turn');
-    if (!turn) return;
-    turn.textContent = fr.hud.turn(state.turn);
-    void pulse(turn);
-  });
 
   rows = buildMenu();
   void enterRows(rows);

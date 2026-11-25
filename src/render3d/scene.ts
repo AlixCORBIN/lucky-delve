@@ -19,6 +19,8 @@ import type { Models } from './models';
 import { PALETTE } from './palette';
 
 const VIEW_HEIGHT = 18.5;
+const PANEL_PX = 464;
+const WIDE_MIN_PX = 1000;
 export const TILE_SIZE = 4;
 
 export interface Scene3dOptions {
@@ -40,7 +42,7 @@ export function createScene3d({ container, store, models, onContextLost }: Scene
   const scene = new Scene();
   scene.background = new Color(PALETTE.night);
 
-  const { width, height } = store.getState().board;
+  const { width, height } = store.getState().floor;
   const center = new Vector3(((width - 1) * TILE_SIZE) / 2, 0, ((height - 1) * TILE_SIZE) / 2);
 
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
@@ -72,11 +74,21 @@ export function createScene3d({ container, store, models, onContextLost }: Scene
     renderer.setSize(w, h, false);
     const aspect = w / h;
     // Sur écran étroit on élargit le cadre pour garder tout le plateau visible.
-    const viewH = aspect < 1 ? VIEW_HEIGHT / aspect : VIEW_HEIGHT;
-    camera.left = (-viewH * aspect) / 2;
-    camera.right = (viewH * aspect) / 2;
-    camera.top = viewH / 2;
-    camera.bottom = -viewH / 2;
+    // La hauteur de vue suit la taille de l'étage (réglée pour 5×5).
+    const base = (VIEW_HEIGHT * (width + height) * 1.08) / 10;
+    const wide = w >= WIDE_MIN_PX;
+    // Largeur du losange du plateau vu en iso, à faire tenir dans la place laissée par le panneau.
+    const boardSpan = (width + height) * TILE_SIZE * Math.SQRT1_2 * 1.08;
+    const freeRatio = wide ? (w - PANEL_PX) / w : 1;
+    const viewH = Math.max(aspect < 1 ? base / aspect : base, boardSpan / (aspect * freeRatio));
+    // Le panneau de pari couvre la droite (écran large) ou le bas (écran étroit) :
+    // on décale le cadre pour que le plateau reste centré dans la place libre.
+    const shiftX = wide ? ((PANEL_PX / 2) / w) * viewH * aspect : 0;
+    const shiftY = wide ? 0 : -viewH * 0.2;
+    camera.left = (-viewH * aspect) / 2 + shiftX;
+    camera.right = (viewH * aspect) / 2 + shiftX;
+    camera.top = viewH / 2 + shiftY;
+    camera.bottom = -viewH / 2 + shiftY;
     camera.updateProjectionMatrix();
   }
   resize();

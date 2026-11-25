@@ -21,7 +21,7 @@ export function createHero3d({ scene, store, models, tileSize }: Hero3dOptions) 
   hero.traverse((o) => {
     o.castShadow = true;
   });
-  const start = store.getState().hero;
+  const start = store.getState().pos;
   hero.position.set(start.x * tileSize, 0, start.y * tileSize);
   hero.rotation.y = Math.PI / 4;
   scene.add(hero);
@@ -53,9 +53,15 @@ export function createHero3d({ scene, store, models, tileSize }: Hero3dOptions) 
   let duration = 0;
 
   const unsubscribe = store.subscribe((state, previous) => {
-    if (state.hero === previous.hero) return;
+    if (state.pos === previous.pos) return;
+    to = new Vector3(state.pos.x * tileSize, 0, state.pos.y * tileSize);
+    if (state.seed !== previous.seed || state.depth !== previous.depth) {
+      // Nouvel étage : on réapparaît au départ, sans marcher à travers le plateau.
+      hero.position.copy(to);
+      progress = 1;
+      return;
+    }
     from = hero.position.clone();
-    to = new Vector3(state.hero.x * tileSize, 0, state.hero.y * tileSize);
     duration = from.distanceTo(to) / WALK_SPEED;
     progress = 0;
     hero.rotation.y = Math.atan2(to.x - from.x, to.z - from.z);

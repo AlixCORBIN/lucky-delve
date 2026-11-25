@@ -1,6 +1,16 @@
+import { moveTargets } from '../core/rules/explore';
+import type { Cell } from '../core/state';
 import type { Store } from '../core/store';
 import { PALETTE } from '../render3d/palette';
 import type { BoardView } from '../ui/view';
+
+const CELL_COLORS: Readonly<Record<Cell, string | null>> = {
+  floor: null,
+  cleared: null,
+  room: PALETTE.berry,
+  clover: PALETTE.clover,
+  exit: PALETTE.gold,
+};
 
 // Filet de sécurité minimal : formes unies, aucune animation. Voir CLAUDE.md.
 export function createBoard2d(container: HTMLElement, store: Store): BoardView {
@@ -38,7 +48,9 @@ export function createBoard2d(container: HTMLElement, store: Store): BoardView {
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const { board, hero } = store.getState();
+    const state = store.getState();
+    const board = state.floor;
+    const hero = state.pos;
     const span = board.width + board.height;
     const size = Math.floor(Math.min((w * 0.9) / span, (h * 0.8) / (span / 2)));
     layout = { size, ox: w / 2 + ((board.height - board.width) * size) / 2, oy: h / 2 - (span / 2 - 1) * (size / 2) };
@@ -48,10 +60,18 @@ export function createBoard2d(container: HTMLElement, store: Store): BoardView {
       for (let x = 0; x < board.width; x++) {
         ctx.fillStyle = (x + y) % 2 === 0 ? PALETTE.stone : PALETTE.mist;
         diamond(...toScreen(x, y), 0.96);
+        const cell = board.cells[y * board.width + x];
+        const color = cell ? CELL_COLORS[cell] : null;
+        if (color) {
+          ctx.fillStyle = color;
+          diamond(...toScreen(x, y), 0.5);
+        }
       }
     }
+    ctx.fillStyle = PALETTE.sky;
+    for (const t of moveTargets(state)) diamond(...toScreen(t.x, t.y), 0.7);
     const [hx, hy] = toScreen(hero.x, hero.y);
-    ctx.fillStyle = PALETTE.gold;
+    ctx.fillStyle = PALETTE.coral;
     ctx.beginPath();
     ctx.ellipse(hx, hy, size * 0.35, size * 0.2, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -64,7 +84,7 @@ export function createBoard2d(container: HTMLElement, store: Store): BoardView {
     const py = (event.clientY - rect.top - layout.oy) / (layout.size / 2);
     const x = Math.round((px + py) / 2);
     const y = Math.round((py - px) / 2);
-    store.dispatch({ type: 'moveHero', to: { x, y } });
+    if (moveTargets(store.getState()).some((t) => t.x === x && t.y === y)) store.dispatch({ type: 'moveHero', to: { x, y } });
   };
 
   canvas.addEventListener('pointerup', onClick);

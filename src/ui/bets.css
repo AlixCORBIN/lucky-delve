@@ -1,0 +1,152 @@
+/* Ressources et paris. Les animations du plateau (dés, roue, rouleaux) sont hors des règles de menu. */
+
+.hud-stats { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-width: 0; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; }
+.stat {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 999px; background: var(--plum);
+  font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.stat-hp .icon { color: var(--coral); }
+.stat-gold .icon { color: var(--gold); }
+.stat-clovers .icon { color: var(--clover); }
+.stat-karma .icon { color: var(--berry); }
+.stat-karma.full { background: var(--berry); color: var(--shadow); }
+.stat-karma.full .icon { color: var(--shadow); }
+.stat-depth { color: var(--mist); }
+.karma-gauge { display: inline-flex; gap: 3px; }
+.karma-gauge i { width: 8px; height: 14px; border-radius: 3px; background: var(--night); }
+.karma-gauge i.on { background: var(--berry); }
+.stat-karma.full .karma-gauge i.on { background: var(--cream); }
+.seed-tag { font-size: 12px; color: var(--stone); font-variant-numeric: tabular-nums; }
+.feed { position: fixed; left: 16px; top: 76px; display: grid; gap: 6px; pointer-events: none; z-index: 2; }
+@media (max-width: 999px) { .feed { top: auto; bottom: calc(58vh + 24px); } }
+.feed-item { padding: 6px 12px; border-radius: 999px; background: rgb(18 15 28 / 0.75); font-size: 15px; width: max-content; max-width: calc(100vw - 32px); }
+.feed-item.good { color: var(--clover); }
+.feed-item.bad { color: var(--coral); }
+
+/* L'hôte ne se positionne pas par transform : les animations d'entrée d'écran l'écrasent. */
+#screens > .bet-host {
+  position: absolute; left: 16px; right: 16px; bottom: 16px; max-height: 58vh;
+  display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none;
+}
+.bet-host > .bet { pointer-events: auto; overflow: auto; max-height: 100%; width: min(560px, 100%); margin: 0 auto; }
+@media (min-width: 1000px) {
+  #screens > .bet-host { left: auto; right: 24px; top: 84px; bottom: 24px; width: 440px; max-height: none; justify-content: center; }
+  .bet-host > .bet { width: 100%; }
+}
+body:has(.banner) #screens > .bet-host { bottom: 72px; }
+.bet {
+  padding: 16px 18px 18px; border-radius: var(--radius-lg);
+  background: rgb(59 47 82 / 0.96); border: 2px solid var(--stone);
+  display: grid; gap: 12px;
+}
+.bet-title { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 22px; font-weight: 600; }
+.bet-title .icon { color: var(--gold); }
+.bet-hint { margin: 0; color: var(--mist); font-size: 15px; line-height: 1.35; }
+.bet-karma { margin: 0; display: flex; gap: 8px; align-items: center; color: var(--berry); font-weight: 600; }
+.bet-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn-small { min-height: 36px; padding: 0 12px; font-size: 15px; gap: 6px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.cost { display: inline-flex; align-items: center; gap: 2px; padding-left: 6px; margin-left: 2px; border-left: 1px solid currentColor; color: var(--clover); }
+.btn-primary .cost { color: inherit; }
+.cost .icon { width: 1em; height: 1em; }
+.tag { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--coral); color: var(--shadow); font-size: 13px; }
+.tag-gold { background: var(--gold); }
+
+.bet-dice { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.die-col { display: grid; gap: 6px; justify-items: center; }
+.die-tools { display: flex; gap: 4px; }
+.die-tools .btn-small { padding: 0 8px; }
+.die {
+  width: 64px; height: 64px; border-radius: 14px; background: var(--cream); color: var(--shadow);
+  display: grid; place-items: center; position: relative; box-shadow: 0 4px 0 var(--stone);
+}
+.die.blank { background: var(--mist); }
+.die-value { font-size: 32px; font-weight: 600; line-height: 1; }
+.die-type { position: absolute; bottom: 3px; right: 6px; font-size: 11px; color: var(--stone); }
+.die.rolling { animation: die-roll 480ms cubic-bezier(0.2, 0.8, 0.3, 1); }
+@keyframes die-roll {
+  0% { transform: rotate(-200deg) scale(0.6); }
+  70% { transform: rotate(12deg) scale(1.08); }
+  100% { transform: none; }
+}
+.die-slot { display: grid; gap: 4px; justify-items: center; padding: 6px; border-radius: 16px; border: 2px solid transparent; background: none; color: inherit; font: inherit; cursor: pointer; }
+.die-slot:active { transform: scale(var(--press-scale)); }
+.slot-attack { border-color: var(--coral); }
+.slot-guard { border-color: var(--sky); }
+.slot-label { font-size: 13px; }
+.slot-attack .slot-label { color: var(--coral); }
+.slot-guard .slot-label { color: var(--sky); }
+.strike-preview { display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+.odds { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.odds-row { display: grid; grid-template-columns: minmax(64px, auto) 1fr 48px auto; gap: 8px; align-items: center; font-size: 14px; padding: 2px 6px; border-radius: 8px; }
+.odds-row.active { background: rgb(242 181 68 / 0.22); }
+.odds-row.struck .odds-label { text-decoration: line-through; opacity: 0.5; }
+.odds-bar { height: 8px; border-radius: 4px; background: var(--night); overflow: hidden; }
+.odds-fill { display: block; height: 100%; background: var(--gold); transition: width 200ms ease-out; }
+.odds-pct { text-align: right; font-variant-numeric: tabular-nums; color: var(--mist); }
+.odds-compact { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); }
+.odds-compact .odds-row { grid-template-columns: 1fr; text-align: center; gap: 2px; }
+.odds-compact .odds-pct { text-align: center; }
+.suspense .odds-row.active { background: none; }
+.suspense .bet-actions, .suspense .loot-result { opacity: 0.3; pointer-events: none; }
+
+.wheel-layout { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; }
+.wheel-layout .odds-row { grid-template-columns: 1fr 40px auto; }
+.wheel-layout .odds-bar { display: none; }
+@media (max-width: 480px) { .wheel-layout { grid-template-columns: 1fr; justify-items: center; } .wheel-layout .odds { width: 100%; } }
+.wheel { position: relative; width: 120px; height: 120px; }
+.wheel-disc { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--cream); }
+.wheel-pointer {
+  position: absolute; left: 50%; top: -8px; transform: translateX(-50%);
+  border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 18px solid var(--cream);
+}
+
+.enemy { display: grid; gap: 6px; padding: 10px 12px; border-radius: var(--radius); background: var(--night); }
+.enemy-name { font-size: 18px; font-weight: 600; display: flex; align-items: center; }
+.enemy-intent { color: var(--mist); font-size: 14px; }
+.hpbar { position: relative; height: 18px; border-radius: 9px; background: var(--shadow); overflow: hidden; }
+.hpbar-fill { position: absolute; inset: 0 auto 0 0; background: var(--coral); transition: width 250ms ease-out; }
+.hpbar-text { position: relative; display: block; text-align: center; font-size: 13px; line-height: 18px; }
+.flee { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.flee-stake { min-width: 96px; text-align: center; font-size: 14px; color: var(--mist); }
+
+.reels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.reel { display: grid; gap: 6px; align-content: start; }
+.reel .odds-row { grid-template-columns: 1fr 40px; font-size: 12px; }
+.reel .odds-bar { display: none; }
+.reel-name { font-size: 13px; color: var(--mist); text-align: center; }
+.reel-window { height: 52px; border-radius: 12px; background: var(--cream); color: var(--shadow); overflow: hidden; display: grid; place-items: center; border: 3px solid transparent; }
+.reel-window.locked { border-color: var(--sky); }
+.reel-symbol { font-size: 17px; font-weight: 600; }
+.reel-symbol.skull { color: var(--coral); }
+.loot-result { margin: 0; text-align: center; font-size: 20px; font-weight: 600; color: var(--gold); }
+
+.cards { display: flex; gap: 16px; justify-content: center; }
+.playing-card {
+  width: 72px; height: 100px; border-radius: 10px; background: var(--cream); color: var(--shadow);
+  display: grid; place-items: center; font-size: 34px; font-weight: 600; box-shadow: 0 4px 0 var(--stone);
+}
+.playing-card.back { background: var(--berry); color: var(--cream); }
+.cards-info { display: flex; justify-content: space-between; font-size: 15px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .die.rolling { animation: none; }
+  .odds-fill, .hpbar-fill { transition: none; }
+}
+
+@media (max-width: 560px) {
+  .seed-tag { display: none; }
+  .stat { padding: 4px 10px; font-size: 15px; }
+  .bet { padding: 12px 14px 14px; gap: 10px; }
+  .bet-title { font-size: 19px; }
+  .bet-hint { font-size: 14px; }
+  .die { width: 54px; height: 54px; }
+  .die-value { font-size: 26px; }
+  .die-tools { gap: 2px; }
+  .die-tools .btn-small { padding: 0 6px; min-height: 32px; }
+  .die-tools .cost { padding-left: 3px; }
+  .bet-dice { gap: 8px; }
+}
