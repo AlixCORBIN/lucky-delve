@@ -24,7 +24,7 @@ Avant chaque commit : `npm run check && npm test`. Avant chaque publication d'ar
 src/core/      logique pure : rng, destin (moteur de pari), state, rules. AUCUN import de three, DOM ou window.
 src/content/   données (héros, monstres, dés, charmes, salles). Pas de logique.
 src/render3d/  three.js : scène, caméra ortho iso, chargement glTF.
-src/render2d/  rendu de secours Canvas 2D (vue du dessus).
+src/render2d/  secours Canvas 2D MINIMAL (formes simples), jamais prioritaire.
 src/ui/        écrans et widgets de pari (DOM).
 src/main.ts    boot : écran de chargement, détection WebGL, choix du rendu.
 public/models/ .glb optimisés. tests/ tests du core.
@@ -36,11 +36,13 @@ public/models/ .glb optimisés. tests/ tests du core.
 - Équilibrage (coûts en Trèfles, poids des roues, dégâts) dans `src/content/`, jamais en dur dans la logique.
 
 ## Fallback WebGL (obligatoire, jamais d'écran noir)
+Le jeu est pensé et peaufiné en 3D. Le mode 2D est un simple filet de sécurité, il ne doit jamais devenir un rendu principal.
 1. Écran de chargement HTML affiché avant tout JS lourd.
 2. Tester WebGL2 puis WebGL1 dans un `try/catch` avant `new WebGLRenderer`.
 3. Échec, ou `webglcontextlost` → basculer sur `render2d` + bandeau « Mode 2D : WebGL indisponible » avec aide (accélération matérielle, `webgl.disabled` sur Firefox).
 4. Toute erreur au boot est affichée à l'écran, pas seulement en console.
-5. `?renderer=2d` force le mode 2D. Toute feature visible doit marcher dans les deux rendus.
+5. `?renderer=2d` force le mode 2D pour le tester.
+6. Mode 2D minimal : formes et couleurs unies, pas de sprites, pas d'animations, pas de polish. Il doit seulement permettre de jouer (il lit le même état et envoie les mêmes actions). Aucune feature ne se conçoit pour lui, et on n'y passe pas de temps au-delà de « ça ne plante pas ».
 
 ## Direction artistique
 - Low-poly mignon, palette fixe (`src/render3d/palette.ts`, ~12 couleurs). Une seule police ronde (OFL).
