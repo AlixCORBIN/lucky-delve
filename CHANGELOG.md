@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.1
+- La graine de chaque partie est tirée sur random.org (sans clé), avec repli automatique sur l'aléa du navigateur ; la source s'affiche en jeu.
+
 ## 0.2.0 : J1 Moteur Destin et première boucle jouable
 - Moteur Destin complet : dés (y compris pipés), roue à parts, machine à sous à 3 rouleaux, cartes, pièce ; les chances affichées sont celles du tirage (testé).
 - Leviers d'influence en Trèfles : relance, poussée ±1, retrait et décalage de part de roue, blocage de rouleaux, coup d'œil ; Karma qui garantit le meilleur résultat après 5 échecs.
